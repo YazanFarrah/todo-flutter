@@ -1,9 +1,10 @@
-import 'dart:developer';
+// ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:todo_flutter/features/home/screens/home_screen.dart';
 
 class AuthServices {
   Future<void> signUpUser({
@@ -65,7 +66,8 @@ class AuthServices {
 
         // Save the token to Flutter Secure Storage
         await storage.write(key: 'auth_token', value: token);
-
+        Navigator.pushNamedAndRemoveUntil(
+            context, HomeScreen.routName, (route) => false);
         print('Sign-in successful');
       } else {
         // Sign-in failed

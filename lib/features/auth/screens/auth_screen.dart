@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:todo_flutter/auth/services/auth.dart';
+import 'package:todo_flutter/features/auth/services/auth.dart';
 import 'package:todo_flutter/common/widgets/custom_button.dart';
 import 'package:todo_flutter/common/widgets/custom_textfield.dart';
 import 'package:todo_flutter/constants/global_variables.dart';
