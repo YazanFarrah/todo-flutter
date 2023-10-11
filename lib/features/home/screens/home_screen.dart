@@ -1,23 +1,94 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
 import 'package:todo_flutter/features/home/services/home.dart';
+import 'package:todo_flutter/features/home/widgets/add_to_dialog.dart';
+import 'package:todo_flutter/features/home/widgets/edit_dialog.dart';
 import 'package:todo_flutter/models/todo.dart';
 import 'package:todo_flutter/providers/todo.dart';
 
-class HomeScreen extends StatelessWidget {
+class SortingPreferences {
+  final _storage = const FlutterSecureStorage();
+  static const _sortingKey = 'sorting_preference';
+
+  Future<void> setSortingPreference(String preference) async {
+    await _storage.write(key: _sortingKey, value: preference);
+  }
+
+  Future<String?> getSortingPreference() async {
+    return await _storage.read(key: _sortingKey);
+  }
+}
+
+class HomeScreen extends StatefulWidget {
   static const routName = '/home-screen';
 
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  SortingPreferences _sortingPreferences = SortingPreferences();
+  bool _isDescending = true; // Default sorting order
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSortingPreference();
+  }
+
+  void _loadSortingPreference() async {
+    String? preference = await _sortingPreferences.getSortingPreference();
+    if (preference != null) {
+      setState(() {
+        _isDescending = preference == 'descending';
+      });
+    }
+  }
+
+  void _toggleSorting() {
+    setState(() {
+      _isDescending = !_isDescending;
+      String preference = _isDescending ? 'descending' : 'ascending';
+      _sortingPreferences.setSortingPreference(preference);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // ...
+      appBar: AppBar(
+        title: const Text(
+          'All',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
+        actions: [
+          IconButton(
+            icon:
+                Icon(_isDescending ? Icons.arrow_downward : Icons.arrow_upward),
+            onPressed: _toggleSorting,
+          ),
+          IconButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AddTodoDialog();
+                },
+              );
+            },
+            icon: const Icon(Icons.add),
+          ),
+        ],
+      ),
       body: FutureBuilder(
         future: HomeServices().getTodos(context),
         builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator();
+            return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Text('Error: ${snapshot.error}');
           } else {
@@ -35,26 +106,78 @@ class HomeScreen extends StatelessWidget {
                 return ListView.builder(
                   itemCount: todoProvider.todos.length,
                   itemBuilder: (context, index) {
-                    Todo todo = todoProvider.todos[index];
+                    List<Todo> sortedTodos = _isDescending
+                        ? [...todoProvider.todos] // Sorting in descending order
+                        : [
+                            ...todoProvider.todos.reversed
+                          ]; // Sorting in ascending order
+                    Todo todo = sortedTodos[index];
 
-                    return ListTile(
-                      leading: Checkbox(
-                        shape: const CircleBorder(),
-                        onChanged: (_) {
-                          todoProvider.toggleTodoCompletion(index);
-                        },
-                        value: todo.completed ?? false,
-                      ),
-                      title: Text(todo.title),
-                      trailing: Text(todo.formattedDate),
-                      subtitle: Text(todo.content),
-                      // subtitle: Text(todo.formattedDate),
-                      // trailing: IconButton(
-                      //   icon: Icon(Icons.delete),
-                      //   onPressed: () {
-                      //     todoProvider.deleteTodo(index);
-                      //   },
-                      // ),
+                    return Column(
+                      children: [
+                        Slidable(
+                          actionPane: const SlidableDrawerActionPane(),
+                          secondaryActions: [
+                            IconSlideAction(
+                              caption: 'Edit',
+                              color: Colors.green,
+                              icon: Icons.edit,
+                              onTap: () async {
+                                // Show the edit dialog
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return EditTodoDialog(
+                                      todo:
+                                          todo, // Pass the todo to the edit dialog
+                                      onEdit: (editedTodo) {
+                                        // Handle the edited todo here
+                                        todoProvider.editTodo(
+                                            index: index, newTodo: editedTodo);
+                                      },
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                            IconSlideAction(
+                              caption: 'Delete',
+                              color: Colors.red,
+                              icon: Icons.delete,
+                              onTap: () async {
+                                todoProvider.deleteTodo(index, todo.id!);
+                              },
+                            ),
+                          ],
+                          child: ListTile(
+                            leading: Checkbox(
+                              shape: const CircleBorder(),
+                              onChanged: (_) {
+                                todoProvider.toggleTodoCompletion(
+                                    index, context);
+                              },
+                              value: todo.completed ?? false,
+                            ),
+                            title: Text(
+                              todo.title,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w900,
+                                color: Color(
+                                  int.parse(
+                                    '0xff${todo.titleColor}',
+                                  ),
+                                ),
+                              ),
+                            ),
+                            trailing: Text(todo.formattedDate),
+                            subtitle: Text(todo.content),
+                          ),
+                        ),
+                        const Divider(
+                          indent: 15,
+                          endIndent: 15,
+                        ),
+                      ],
                     );
                   },
                 );
