@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:todo_flutter/features/auth/screens/auth_screen.dart';
 import 'package:todo_flutter/features/home/screens/home_screen.dart';
+import 'package:todo_flutter/features/home/screens/main_screen.dart';
 
 class UserState extends StatelessWidget {
   const UserState({super.key});
@@ -12,9 +13,11 @@ class UserState extends StatelessWidget {
       future: _getToken(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
-          if (snapshot.hasData && snapshot.data != null) {
+          if (snapshot.hasData &&
+              snapshot.data != null &&
+              snapshot.data != "") {
             // User is logged in
-            return const HomeScreen();
+            return const MainScreen();
           } else {
             // User is not logged in
             return const AuthScreen();

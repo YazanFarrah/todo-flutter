@@ -21,16 +21,16 @@ class SortingPreferences {
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  static const routName = '/home-screen';
+class CompletedTasks extends StatefulWidget {
+  static const routName = '/completed-tasks';
 
-  const HomeScreen({super.key});
+  const CompletedTasks({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<CompletedTasks> createState() => _CompletedTasksState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _CompletedTasksState extends State<CompletedTasks> {
   final SortingPreferences _sortingPreferences = SortingPreferences();
   bool _isDescending = true; // Default sorting order
 
@@ -62,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'All',
+          'Completed Tasks',
           style: TextStyle(fontWeight: FontWeight.w800),
         ),
         actions: [
@@ -71,21 +71,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 Icon(_isDescending ? Icons.arrow_downward : Icons.arrow_upward),
             onPressed: _toggleSorting,
           ),
-          IconButton(
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AddTodoDialog();
-                },
-              );
-            },
-            icon: const Icon(Icons.add),
-          ),
         ],
       ),
       body: FutureBuilder(
-        future: HomeServices().getTodos(context),
+        future: HomeServices().getCompletedTodos(context),
         builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

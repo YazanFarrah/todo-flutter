@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:todo_flutter/features/auth/screens/auth_screen.dart';
 import 'package:todo_flutter/features/auth/screens/user_state.dart';
+import 'package:todo_flutter/providers/drawer_controller.dart';
 import 'package:todo_flutter/providers/todo.dart';
 import 'package:todo_flutter/providers/user.dart';
 import 'package:todo_flutter/router.dart';
 
 void main() {
-  runApp(const MyApp());
   WidgetsFlutterBinding.ensureInitialized();
+
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -21,6 +22,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => UserProvider()),
         ChangeNotifierProvider(create: (context) => TodoProvider()),
+        ChangeNotifierProvider(create: (context) => MenuAppController()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

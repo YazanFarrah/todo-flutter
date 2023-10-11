@@ -51,11 +51,12 @@ class TodoProvider extends ChangeNotifier {
   }
 
   void editTodo({
-    required int index,
+    required String todoId, // Pass the unique todo id
     required Todo newTodo,
   }) async {
     String? authToken = await storage.read(key: 'auth_token');
-    final url = Uri.parse('http://10.0.2.2:5000/home/todo/${newTodo.id}');
+    final url = Uri.parse(
+        'http://10.0.2.2:5000/home/todo/$todoId'); // Use the unique todoId in the URL
     try {
       final response = await http.patch(
         url,
@@ -72,8 +73,11 @@ class TodoProvider extends ChangeNotifier {
 
       if (response.statusCode == 200) {
         // Successful update, update the UI
-        _todos[index] = newTodo; // Update the local list with the edited todo
-        notifyListeners();
+        final index = _todos.indexWhere((todo) => todo.id == todoId);
+        if (index != -1) {
+          _todos[index] = newTodo; // Update the local list with the edited todo
+          notifyListeners();
+        }
       } else {
         throw Exception('Failed to update the todo');
       }

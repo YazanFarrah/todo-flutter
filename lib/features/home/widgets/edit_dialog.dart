@@ -31,7 +31,7 @@ class _EditTodoDialogState extends State<EditTodoDialog> {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: AlertDialog(
-        title: Text('Edit Todo'),
+        title: const Text('Edit Todo'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
